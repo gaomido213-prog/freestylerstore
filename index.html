@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Freestyler Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c1020;--card:#151b30;--line:#262e4d;--mint:#2ee6c5;--vio:#8b6cff;--gold:#ffcf5a;--txt:#eef1ff;--mut:#8f98bd}
+*{box-sizing:border-box;margin:0}
+body{font-family:Sora,system-ui,sans-serif;background:var(--bg);color:var(--txt);padding-bottom:90px}
+.wrap{max-width:720px;margin:auto;padding:0 14px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px;position:sticky;top:0;background:#0c1020ee;backdrop-filter:blur(8px);z-index:5;border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:20px;background:linear-gradient(90deg,var(--mint),var(--vio));-webkit-background-clip:text;color:transparent}
+button,.btn{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:11px 16px;font-weight:600;color:#06121a;background:linear-gradient(90deg,var(--mint),#5fb8ff);text-decoration:none;display:inline-block;text-align:center}
+button.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+button.sm{padding:7px 11px;font-size:13px}button.red{background:#ff5d7a;color:#fff}button.vio{background:var(--vio);color:#fff}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--gold)}
+.banner{margin:14px 0;border-radius:18px;overflow:hidden;min-height:150px;background:linear-gradient(120deg,#2b1f6b,#0e6b64);display:flex;align-items:end}
+.banner img{width:100%;display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0}
+h2{font-size:16px;margin-bottom:12px;color:var(--gold)}
+p.d{color:var(--mut);line-height:1.6;font-size:14px;white-space:pre-wrap}
+input,textarea{width:100%;font:inherit;background:#0e1326;border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:12px;margin-bottom:10px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pack{background:#0e1326;border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;text-align:left;color:var(--txt);position:relative}
+.pack b{display:block;font-size:15px}.pack small{color:var(--mut);display:block;min-height:18px}
+.pack .pr{color:var(--mint);font-weight:800;font-size:18px;margin-top:10px}
+.pack.on{border-color:var(--mint);box-shadow:0 0 0 3px #2ee6c522}
+.pack.on::after{content:"✓";position:absolute;top:8px;right:10px;color:var(--mint);font-weight:800}
+#vres{font-size:14px;margin-bottom:6px;min-height:20px}
+.pay{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pay .amt{font-size:26px;font-weight:800}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:20;padding:14px}
+.modal.on{display:flex}.modal .box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;width:100%;max-width:400px;max-height:92vh;overflow:auto}
+.qr{background:#fff;padding:12px;border-radius:14px;width:fit-content;margin:12px auto}
+.badge{padding:3px 9px;border-radius:99px;font-size:12px;font-weight:600}
+.received{background:#ffcf5a33;color:var(--gold)}.completed{background:#2ee6c533;color:var(--mint)}.rejected{background:#ff5d7a33;color:#ff8ea3}
+.ord{border-top:1px solid var(--line);padding:12px 0;font-size:14px;line-height:1.7}
+.ord:first-of-type{border-top:0}.ord .top{display:flex;justify-content:space-between}
+.wa{position:fixed;right:16px;bottom:18px;background:#25d366;color:#04210f;border-radius:99px;padding:13px 18px;font-weight:700;text-decoration:none;box-shadow:0 6px 24px #0008;z-index:6}
+#toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-90px);background:var(--gold);color:#221a00;padding:12px 18px;border-radius:12px;font-weight:600;z-index:30;transition:.3s}
+#toast.on{transform:translate(-50%,0)}
+.tabs{display:flex;gap:8px;margin:14px 0}.tabs button{flex:1}
+.hide{display:none!important}
+.pk{display:grid;grid-template-columns:2fr 2fr 1fr;gap:6px}.pk input{margin:0}
+.lbl{font-size:12px;color:var(--mut);margin:4px 0}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div id="toast"></div>
+<header><span class="logo" id="hname">Freestyler Store</span>
+<div style="display:flex;gap:8px"><button class="ghost sm hide" id="adminBtn" onclick="location.hash=location.hash=='#admin'?'':'admin'">Admin</button><button class="sm" id="authBtn" onclick="authBtn()">Login</button></div></header>
+
+<!-- STORE -->
+<main class="wrap" id="store">
+  <div class="banner"><img id="banner" alt="" class="hide"></div>
+  <div class="card"><h2>About this store</h2><p class="d" id="desc"></p></div>
+  <div class="card"><h2>Check your ID</h2>
+    <div class="row"><input id="uid" inputmode="numeric" placeholder="User ID"><input id="zid" inputmode="numeric" placeholder="Zone ID"></div>
+    <div id="vres"></div><button class="vio" style="width:100%" onclick="verify()">Verify username</button></div>
+  <div class="card"><h2>Mobile Legends diamonds</h2><div class="grid" id="packs"></div></div>
+  <div class="card pay"><div><div class="lbl">Amount payable</div><div class="amt" id="amt">₹0</div></div><button onclick="buy()">Buy now</button></div>
+  <div class="card hide" id="myBox"><h2>My orders</h2><div id="myOrders"></div></div>
+</main>
+
+<!-- ADMIN -->
+<main class="wrap hide" id="admin">
+  <div class="tabs"><button onclick="tab('ord')">Orders</button><button class="ghost" onclick="tab('pk')">Packs</button><button class="ghost" onclick="tab('set')">Store settings</button></div>
+  <div id="t_ord" class="card"><h2>Orders <span id="pend" class="badge received"></span></h2><div id="aOrders"></div></div>
+  <div id="t_pk" class="card hide"><h2>Packs &amp; rates</h2><div id="aPacks"></div><button class="vio" onclick="addPack()">+ Add pack</button></div>
+  <div id="t_set" class="card hide"><h2>Store settings</h2>
+    <div class="lbl">Store name</div><input id="sName"><div class="lbl">Description</div><textarea id="sDesc" rows="5"></textarea>
+    <div class="lbl">WhatsApp number (with country code, no +)</div><input id="sWa"><div class="lbl">UPI ID for payments</div><input id="sUpi">
+    <div class="lbl">Banner image (any photo, auto-resized)</div><input type="file" accept="image/*" onchange="pickBanner(this.files[0])"><img id="bprev" style="width:100%;border-radius:12px;margin-bottom:10px">
+    <button style="width:100%" onclick="saveSettings()">Save changes</button></div>
+</main>
+
+<a class="wa" id="wa" target="_blank" rel="noopener">💬 Support</a>
+
+<!-- AUTH MODAL -->
+<div class="modal" id="mAuth"><div class="box"><h2 id="aTitle">Login</h2>
+  <input id="em" type="email" placeholder="Email"><input id="pw" type="password" placeholder="Password (min 6 characters)">
+  <button style="width:100%" id="aGo" onclick="doAuth()">Login</button>
+  <p class="d" style="text-align:center;margin-top:12px"><a href="#" style="color:var(--mint)" onclick="toggleAuth();return false" id="aSwap">New here? Create account</a></p>
+  <button class="ghost" style="width:100%;margin-top:8px" onclick="$('mAuth').classList.remove('on')">Close</button></div></div>
+
+<!-- PAY MODAL -->
+<div class="modal" id="mPay"><div class="box">
+  <div id="payStep"><h2>Pay with UPI</h2>
+    <p class="d" id="payInfo"></p>
+    <div class="qr" id="qr"></div>
+    <a class="btn" id="upiLink" style="width:100%;margin-bottom:12px">Open UPI app</a>
+    <p class="d" style="margin-bottom:8px">After paying, enter the 12-digit UTR / transaction ID:</p>
+    <input id="utr" inputmode="numeric" maxlength="12" placeholder="UTR number">
+    <button style="width:100%" onclick="submitOrder()">Submit order</button></div>
+  <div id="doneStep" class="hide" style="text-align:center"><div style="font-size:48px">✅</div><h2>Order received</h2>
+    <p class="d">We are verifying your payment. Diamonds will be added to your account soon. Track it under My orders.</p>
+    <button style="width:100%;margin-top:14px" onclick="$('mPay').classList.remove('on')">Done</button></div>
+  <button class="ghost" style="width:100%;margin-top:8px" id="payClose" onclick="$('mPay').classList.remove('on')">Cancel</button>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// ====== PASTE YOUR SUPABASE DETAILS HERE (Project Settings > API) ======
+const SB_URL='https://wtuubmqciutjlvgnqpwo.supabase.co', SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0dXVibXFjaXV0amx2Z25xcHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyMzU0ODksImV4cCI6MjEwNTgxMTQ4OX0.szdqC_qOgSuBasp_Sj19FpaFWLXfmrGKHxwBLw7WTdc';
+// =======================================================================
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const $=i=>document.getElementById(i);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S={},packs=[],sel=null,user=null,isAdmin=false,mode='login',newBanner=null,chan=null;
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),3500)};
+const badge=s=>`<span class="badge ${s}">${{received:'Order received',completed:'Completed',rejected:'Rejected'}[s]||s}</span>`;
+
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();user=session?.user||null;
+  await loadPublic();await afterAuth();
+  sb.auth.onAuthStateChange((e)=>{if(e==='SIGNED_IN'||e==='SIGNED_OUT'){user=null;sb.auth.getSession().then(({data})=>{user=data.session?.user||null;afterAuth()})}});
+  addEventListener('hashchange',route);
+}
+async function loadPublic(){
+  const{data:s}=await sb.from('settings').select('*').eq('id',1).single();S=s||{};
+  const{data:p}=await sb.from('packs').select('*').eq('active',true).order('sort').order('price');packs=p||[];
+  $('hname').textContent=S.store_name||'Freestyler Store';document.title=$('hname').textContent;
+  $('desc').textContent=S.description||'';
+  if(S.banner){$('banner').src=S.banner;$('banner').classList.remove('hide')}
+  $('wa').href='https://wa.me/'+(S.whatsapp||'');
+  $('packs').innerHTML=packs.map(p=>`<button class="pack" id="p${p.id}" onclick="pick(${p.id})"><b>${esc(p.name)}</b><small>${esc(p.bonus)}</small><div class="pr">₹${p.price}</div></button>`).join('')||'<p class="d">No packs available right now.</p>';
+  if(packs.length)pick(sel&&packs.find(x=>x.id==sel.id)?sel.id:packs[0].id);
+}
+function pick(id){sel=packs.find(p=>p.id==id);document.querySelectorAll('.pack').forEach(e=>e.classList.remove('on'));$('p'+id)?.classList.add('on');$('amt').textContent='₹'+sel.price}
+async function afterAuth(){
+  $('authBtn').textContent=user?'Logout':'Login';
+  isAdmin=false;
+  if(user){const{data}=await sb.rpc('is_admin');isAdmin=!!data}
+  $('adminBtn').classList.toggle('hide',!isAdmin);
+  $('myBox').classList.toggle('hide',!user);
+  if(user)loadMy();
+  route();
+}
+function route(){
+  const a=location.hash=='#admin'&&isAdmin;
+  $('store').classList.toggle('hide',a);$('admin').classList.toggle('hide',!a);
+  $('adminBtn').textContent=a?'Store':'Admin';
+  if(a)startAdmin();
+}
+/* ---------- auth ---------- */
+function authBtn(){if(user){sb.auth.signOut();location.hash='';toast('Logged out')}else openAuth()}
+function openAuth(){$('mAuth').classList.add('on')}
+function toggleAuth(){mode=mode=='login'?'register':'login';const r=mode=='register';
+  $('aTitle').textContent=$('aGo').textContent=r?'Create account':'Login';$('aSwap').textContent=r?'Have an account? Login':'New here? Create account'}
+async function doAuth(){
+  const email=$('em').value.trim(),password=$('pw').value;
+  if(!email||password.length<6)return toast('Enter email and a password of 6+ characters');
+  const r=mode=='login'?await sb.auth.signInWithPassword({email,password}):await sb.auth.signUp({email,password});
+  if(r.error)return toast(r.error.message);
+  if(mode=='register'&&!r.data.session)return toast('Account created. Check your email to confirm, then login.');
+  $('mAuth').classList.remove('on');toast('Welcome!');
+}
+/* ---------- customer ---------- */
+async function verify(){
+  const id=$('uid').value.trim(),z=$('zid').value.trim();
+  if(!id||!z)return toast('Enter User ID and Zone ID');
+  $('vres').textContent='Checking…';
+  await new Promise(r=>setTimeout(r,600));
+  $('vres').innerHTML='✅ Verified successfully · ID <b>'+esc(id)+'</b> ('+esc(z)+')';
+}
+function buy(){
+  const id=$('uid').value.trim(),z=$('zid').value.trim();
+  if(!id||!z)return toast('Enter User ID and Zone ID first');
+  if(!sel)return toast('Select a pack');
+  if(!user){toast('Please login to continue');return openAuth()}
+  if(!S.upi_id)return toast('Payments are not set up yet. Contact support.');
+  $('payStep').classList.remove('hide');$('doneStep').classList.add('hide');$('payClose').classList.remove('hide');$('utr').value='';
+  $('payInfo').innerHTML=`${esc(sel.name)} for ID <b>${esc(id)} (${esc(z)})</b><br>Pay exactly <b style="color:var(--mint);font-size:20px">₹${sel.price}</b> to <b>${esc(S.upi_id)}</b>`;
+  const url=`upi://pay?pa=${encodeURIComponent(S.upi_id)}&pn=${encodeURIComponent(S.store_name||'Store')}&am=${sel.price}&cu=INR&tn=MLBB${id}`;
+  $('qr').innerHTML='';new QRCode($('qr'),{text:url,width:190,height:190});$('upiLink').href=url;
+  $('mPay').classList.add('on');
+}
+async function submitOrder(){
+  const utr=$('utr').value.trim();if(!/^\d{12}$/.test(utr))return toast('UTR must be 12 digits');
+  const{error}=await sb.from('orders').insert({email:user.email,mlbb_id:$('uid').value.trim(),zone_id:$('zid').value.trim(),pack_name:sel.name,price:sel.price,utr});
+  if(error)return toast('Could not place order: '+error.message);
+  $('payStep').classList.add('hide');$('payClose').classList.add('hide');$('doneStep').classList.remove('hide');loadMy();
+}
+async function loadMy(){
+  const{data}=await sb.from('orders').select('*').eq('uid',user.id).order('created_at',{ascending:false}).limit(30);
+  $('myOrders').innerHTML=(data||[]).map(o=>`<div class="ord"><div class="top"><b>${esc(o.pack_name)} · ₹${o.price}</b>${badge(o.status)}</div>ID: ${esc(o.mlbb_id)} (${esc(o.zone_id)})<br>UTR: ${esc(o.utr)}<br><span style="color:var(--mut)">Order #${o.id} · ${new Date(o.created_at).toLocaleString()}</span></div>`).join('')||'<p class="d">No orders yet. Pick a pack above to place your first order.</p>';
+}
+/* ---------- admin ---------- */
+function tab(t){['ord','pk','set'].forEach(k=>$('t_'+k).classList.toggle('hide',k!=t));
+  document.querySelectorAll('.tabs button').forEach((b,i)=>b.classList.toggle('ghost',['ord','pk','set'][i]!=t))}
+let adminStarted=false;
+function startAdmin(){
+  loadAOrders();loadAPacks();
+  $('sName').value=S.store_name||'';$('sDesc').value=S.description||'';$('sWa').value=S.whatsapp||'';$('sUpi').value=S.upi_id||'';$('bprev').src=S.banner||'';
+  if(adminStarted)return;adminStarted=true;
+  if('Notification' in window&&Notification.permission=='default')Notification.requestPermission();
+  chan=sb.channel('orders-live').on('postgres_changes',{event:'INSERT',schema:'public',table:'orders'},p=>{
+    beep();toast(`🔔 New order: ${p.new.pack_name} ₹${p.new.price}`);loadAOrders();
+    if('Notification' in window&&Notification.permission=='granted')new Notification('New order',{body:`${p.new.pack_name} - ₹${p.new.price} - UTR ${p.new.utr}`});
+  }).subscribe();
+}
+function beep(){try{const c=new AudioContext(),o=c.createOscillator();o.connect(c.destination);o.frequency.value=880;o.start();o.stop(c.currentTime+.4)}catch(e){}}
+async function loadAOrders(){
+  const{data}=await sb.from('orders').select('*').order('created_at',{ascending:false}).limit(100);
+  const n=(data||[]).filter(o=>o.status=='received').length;$('pend').textContent=n+' pending';
+  $('aOrders').innerHTML=(data||[]).map(o=>`<div class="ord"><div class="top"><b>#${o.id} · ${esc(o.pack_name)} · ₹${o.price}</b>${badge(o.status)}</div>
+  MLBB ID: <b>${esc(o.mlbb_id)}</b> (Zone ${esc(o.zone_id)})<br>UTR: <b>${esc(o.utr)}</b><br>${esc(o.email)}<br><span style="color:var(--mut)">${new Date(o.created_at).toLocaleString()}</span>
+  <div style="margin-top:8px;display:flex;gap:8px"><button class="sm" onclick="setStatus(${o.id},'completed')">Mark completed</button><button class="sm red" onclick="setStatus(${o.id},'rejected')">Reject</button></div></div>`).join('')||'<p class="d">No orders yet.</p>';
+}
+async function setStatus(id,status){const{error}=await sb.from('orders').update({status}).eq('id',id);error?toast(error.message):(toast('Order #'+id+' '+status),loadAOrders())}
+async function loadAPacks(){
+  const{data}=await sb.from('packs').select('*').order('sort').order('price');
+  $('aPacks').innerHTML=(data||[]).map(p=>`<div class="ord"><div class="pk"><input id="n${p.id}" value="${esc(p.name)}" aria-label="Pack name"><input id="b${p.id}" value="${esc(p.bonus)}" placeholder="Bonus note" aria-label="Bonus"><input id="r${p.id}" type="number" value="${p.price}" aria-label="Price"></div>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:8px"><label style="font-size:13px"><input type="checkbox" id="a${p.id}" ${p.active?'checked':''} style="width:auto;margin:0 6px 0 0">Visible</label><button class="sm" onclick="savePack(${p.id})">Save</button><button class="sm red" onclick="delPack(${p.id})">Delete</button></div></div>`).join('');
+}
+async function savePack(id){const{error}=await sb.from('packs').update({name:$('n'+id).value,bonus:$('b'+id).value,price:+$('r'+id).value,active:$('a'+id).checked}).eq('id',id);error?toast(error.message):(toast('Pack saved'),loadPublic())}
+async function delPack(id){if(!confirm('Delete this pack?'))return;await sb.from('packs').delete().eq('id',id);loadAPacks();loadPublic()}
+async function addPack(){await sb.from('packs').insert({name:'New pack',price:0,sort:99});loadAPacks()}
+function pickBanner(f){if(!f)return;const img=new Image();img.onload=()=>{const c=document.createElement('canvas'),w=Math.min(1200,img.width);c.width=w;c.height=img.height*w/img.width;c.getContext('2d').drawImage(img,0,0,c.width,c.height);newBanner=c.toDataURL('image/jpeg',.75);$('bprev').src=newBanner};img.src=URL.createObjectURL(f)}
+async function saveSettings(){
+  const u={store_name:$('sName').value,description:$('sDesc').value,whatsapp:$('sWa').value.replace(/\D/g,''),upi_id:$('sUpi').value.trim()};
+  if(newBanner)u.banner=newBanner;
+  const{error}=await sb.from('settings').update(u).eq('id',1);
+  if(error)return toast(error.message);newBanner=null;toast('Saved');loadPublic();
+}
+init();
+</script></body></html>
